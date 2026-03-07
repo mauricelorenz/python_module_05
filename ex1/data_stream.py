@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from typing import Any, List, Dict, Union, Optional
+from typing import Any, List, Dict, Union, Optional, Tuple
 from abc import ABC, abstractmethod
 
 
@@ -26,8 +26,10 @@ class SensorStream(DataStream):
         super().__init__(stream_id)
 
     def process_batch(self, data_batch: List[Any]) -> str:
-        if not isinstance(data_batch, list):
-            return "Invalid argument!"
+        if (not isinstance(data_batch, list)
+            or not any("temp" in data or "humidity" in data
+                       or "pressure" in data for data in data_batch)):
+            raise ValueError("Invalid argument!")
         temp_list = []
         for data in data_batch:
             try:
@@ -61,8 +63,10 @@ class TransactionStream(DataStream):
         super().__init__(stream_id)
 
     def process_batch(self, data_batch: List[Any]) -> str:
-        if not isinstance(data_batch, list):
-            return "Invalid argument!"
+        if (not isinstance(data_batch, list)
+            or not any("buy" in data or "sell" in data
+                       for data in data_batch)):
+            raise ValueError("Invalid argument!")
         net_flow = 0
         for data in data_batch:
             try:
@@ -95,8 +99,10 @@ class EventStream(DataStream):
         super().__init__(stream_id)
 
     def process_batch(self, data_batch: List[Any]) -> str:
-        if not isinstance(data_batch, list):
-            return "Invalid argument!"
+        if (not isinstance(data_batch, list)
+                or not any(data in ("login", "error", "logout")
+                           for data in data_batch)):
+            raise ValueError("Invalid argument!")
         data_errors = [data for data in data_batch if data == "error"]
         self.batch_len = len(data_batch)
         return (f"{self.batch_len} events, {len(data_errors)} "
@@ -112,8 +118,30 @@ class EventStream(DataStream):
         return super().get_stats()
 
 
-class StreamManager:
-    pass
+class StreamProcessor:
+    def __init__(self, streams: List[DataStream]) -> None:
+        self.streams = streams
+
+    def process_all(self, data_batches: List[List[Any]]) -> Tuple[Dict, Dict]:
+        process_results: Dict[DataStream, int] = {}
+        filter_results: Dict[DataStream, int] = {}
+        for batch in data_batches:
+            for stream in self.streams:
+                try:
+                    stream.process_batch(batch)
+                    if process_results.get(stream):
+                        process_results[stream] += 1
+                    else:
+                        process_results[stream] = 1
+                    filter_result = stream.filter_data(batch, "high")
+                    if filter_results.get(stream):
+                        filter_results[stream] += len(filter_result)
+                    else:
+                        filter_results[stream] = len(filter_result)
+                    break
+                except ValueError:
+                    pass
+        return process_results, filter_results
 
 
 def main() -> None:
