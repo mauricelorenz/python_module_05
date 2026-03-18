@@ -122,7 +122,8 @@ class StreamProcessor:
     def __init__(self, streams: List[DataStream]) -> None:
         self.streams = streams
 
-    def process_all(self, data_batches: List[List[Any]]) -> Tuple[Dict, Dict]:
+    def process_all(self, data_batches: List[List[Any]]) \
+            -> Tuple[Dict[DataStream, int], Dict[DataStream, int]]:
         process_results: Dict[DataStream, int] = {}
         filter_results: Dict[DataStream, int] = {}
         for batch in data_batches:
