@@ -15,8 +15,9 @@ class InputStage:
     def process(self, data: Any) -> Any:
         if not isinstance(data, (dict, str, list)):
             raise ValueError("Stage 1: Invalid data format")
-        print(f"Input: {"Real-time sensor stream"
-                        if isinstance(data, list) else data}")
+        input_data = ("Real-time sensor stream"
+                      if isinstance(data, list) else data)
+        print(f"Input: {input_data}")
         return data
 
 
@@ -26,14 +27,13 @@ class TransformStage:
             print("Transform: Enriched with metadata and validation")
             clean_dict = {key: value.upper() if key == "unit"
                           else value for key, value in data.items()}
-            return ("Processed "
-                    f"{"temperature " if clean_dict["sensor"] == "temp"
-                       else ""}"
-                    f"reading: {clean_dict["value"]}°{clean_dict["unit"]} "
-                    f"{"(Normal range)" if clean_dict["value"] < 25 else ""}")
+            temp_str = "temperature " if clean_dict["sensor"] == "temp" else ""
+            return (f"Processed {temp_str}"
+                    f"reading: {clean_dict['value']}°{clean_dict['unit']} "
+                    f"{'(Normal range)' if clean_dict['value'] < 25 else ''}")
         if isinstance(data, str):
             print("Transform: Parsed and structured data")
-            return (f"User activity logged: {data.count("user")} "
+            return (f"User activity logged: {data.count('user')} "
                     "actions processed")
         if isinstance(data, list):
             print("Transform: Aggregated and filtered")
@@ -185,7 +185,7 @@ def main() -> None:
         end_time = time()
         print("\nData flow: Raw -> Processed -> Analyzed -> Stored")
         print(f"Chain result: {len(pipeline_data)} "
-              f"{"record" if len(pipeline_data) == 1 else "records"} "
+              f"{'record' if len(pipeline_data) == 1 else 'records'} "
               "processed through 3-stage pipeline")
         print(f"Performance: 95% efficiency, {end_time - start_time:.6f}"
               "s total processing time")

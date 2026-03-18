@@ -78,7 +78,7 @@ class TransactionStream(DataStream):
                 pass
         self.batch_len = len(data_batch)
         return (f"{self.batch_len} operations, net flow: "
-                f"{"+" if net_flow > 0 else ""}{net_flow} units")
+                f"{'+' if net_flow > 0 else ''}{net_flow} units")
 
     def filter_data(self, data_batch: List[Any],
                     criteria: Optional[str] = None) -> List[Any]:
@@ -106,7 +106,7 @@ class EventStream(DataStream):
         data_errors = [data for data in data_batch if data == "error"]
         self.batch_len = len(data_batch)
         return (f"{self.batch_len} events, {len(data_errors)} "
-                f"{"error" if len(data_errors) == 1 else "errors"} detected")
+                f"{'error' if len(data_errors) == 1 else 'errors'} detected")
 
     def filter_data(self, data_batch: List[Any],
                     criteria: Optional[str] = None) -> List[Any]:
