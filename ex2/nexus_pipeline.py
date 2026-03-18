@@ -58,7 +58,7 @@ class ProcessingPipeline(ABC):
     def add_stage(self, stage: ProcessingStage) -> None:
         self.stages.append(stage)
 
-    def process(self, data: Any) -> Any:
+    def process(self, data: Any) -> Union[str, Any]:
         for stage in self.stages:
             try:
                 data = stage.process(data)
